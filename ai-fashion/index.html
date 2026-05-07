@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Fashion - 智能时尚选品平台</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <button class="mobile-toggle">☰</button>
+  <div class="overlay"></div>
+  <div class="app-layout">
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <h1>AI Fashion</h1>
+        <p>智能时尚选品平台</p>
+      </div>
+      <nav class="sidebar-nav" id="nav"></nav>
+      <div class="sidebar-footer">
+        <div class="avatar">AI</div>
+        <div class="user-info">
+          <div class="name">选品专家</div>
+          <div class="role">高级分析师</div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="page-header">
+        <div>
+          <div class="page-title"><span>AI</span> 趋势洞察 · 智能选品</div>
+          <div class="page-subtitle">基于大数据与AI算法的时尚趋势预测与智能选品系统</div>
+        </div>
+        <div class="header-actions">
+          <div class="search-box">
+            <input class="input" placeholder="搜索商品/趋势/供应商..." style="width:260px">
+          </div>
+          <button class="btn btn-primary">🔍 AI分析</button>
+        </div>
+      </div>
+
+      <!-- Stat Cards -->
+      <div class="grid grid-4" style="margin-bottom:24px">
+        <div class="stat-card fade-in">
+          <div class="stat-label">📈 今日趋势热度</div>
+          <div class="stat-value" data-count="96">0</div>
+          <div class="stat-change up">▲ 12% 较昨日</div>
+        </div>
+        <div class="stat-card fade-in" style="animation-delay:0.1s">
+          <div class="stat-label">🎯 AI推荐匹配率</div>
+          <div class="stat-value" data-count="89">0</div>
+          <div class="stat-change up">▲ 5% 较上周</div>
+        </div>
+        <div class="stat-card fade-in" style="animation-delay:0.2s">
+          <div class="stat-label">🔥 爆款发现数</div>
+          <div class="stat-value" data-count="156">0</div>
+          <div class="stat-change up">▲ 23 今日新增</div>
+        </div>
+        <div class="stat-card fade-in" style="animation-delay:0.3s">
+          <div class="stat-label">💰 预估利润提升</div>
+          <div class="stat-value" data-count="34">0</div>
+          <div class="stat-change up">▲ 8% 较上月</div>
+        </div>
+      </div>
+
+      <!-- Trend Charts Row -->
+      <div class="grid grid-2" style="margin-bottom:24px">
+        <!-- Hot Selling Trend -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span class="icon">🔥</span> 热卖趋势</div>
+            <span class="badge badge-accent">实时更新</span>
+          </div>
+          <div id="hotTrendChart" class="bar-chart" style="height:180px;margin-bottom:30px"></div>
+        </div>
+
+        <!-- Color Prediction -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span class="icon">🎨</span> 流行色预测</div>
+            <span class="badge badge-primary">AI预测</span>
+          </div>
+          <div id="colorGrid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;padding:10px"></div>
+        </div>
+      </div>
+
+      <!-- Style Cloud + Recommendations -->
+      <div class="grid grid-2" style="margin-bottom:24px">
+        <!-- Style Word Cloud -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span class="icon">☁️</span> 风格趋势词云</div>
+            <span class="badge badge-warning">2025春夏</span>
+          </div>
+          <div id="styleCloud" class="tag-cloud" style="min-height:200px"></div>
+        </div>
+
+        <!-- AI Recommendations -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span class="icon">🤖</span> AI智能推荐</div>
+            <select class="select" style="width:120px" id="sceneSelect">
+              <option>职场通勤</option>
+              <option>度假出游</option>
+              <option>日常休闲</option>
+            </select>
+          </div>
+          <div id="recommendations"></div>
+        </div>
+      </div>
+
+      <!-- Rankings -->
+      <div class="grid grid-3" style="margin-bottom:24px">
+        <!-- Hot Sales -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span class="icon">🏆</span> 实时热销TOP</div>
+          </div>
+          <div id="hotRanking"></div>
+        </div>
+
+        <!-- Rising -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span class="icon">🚀</span> 飙升榜</div>
+          </div>
+          <div id="risingRanking"></div>
+        </div>
+
+        <!-- New Arrivals -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span class="icon">✨</span> 新品榜</div>
+          </div>
+          <div id="newArrivalRanking"></div>
+        </div>
+      </div>
+
+      <!-- Products Grid -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span class="icon">💎</span> AI精选推荐商品</div>
+          <button class="btn btn-outline btn-sm">查看全部 →</button>
+        </div>
+        <div class="grid grid-4" id="productGrid"></div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/common.js"></script>
+  <script>
+    // Nav
+    document.getElementById('nav').innerHTML = getNavHTML('index.html');
+
+    // Animate stat numbers
+    document.querySelectorAll('[data-count]').forEach(el => {
+      const target = parseInt(el.dataset.count);
+      setTimeout(() => Utils.animateNum(el, target), 500);
+    });
+
+    // Hot Trend Bar Chart
+    (function() {
+      const container = document.getElementById('hotTrendChart');
+      const data = MOCK_DATA.trends.hotSelling;
+      const max = Math.max(...data.map(d => d.score));
+      data.forEach(d => {
+        const item = document.createElement('div');
+        item.className = 'bar-chart-item';
+        item.style.height = (d.score / max * 100) + '%';
+        item.innerHTML = `<span class="value">${d.score}</span><span class="label">${d.name.slice(0,4)}</span>`;
+        container.appendChild(item);
+      });
+    })();
+
+    // Color Grid
+    (function() {
+      const grid = document.getElementById('colorGrid');
+      MOCK_DATA.trends.colors.slice(0, 8).forEach(c => {
+        const swatch = document.createElement('div');
+        swatch.className = 'color-swatch';
+        swatch.innerHTML = `
+          <div class="circle" style="background:${c.hex};box-shadow:0 0 15px ${c.hex}40"></div>
+          <div class="name">${c.name}</div>
+          <div class="code">${c.pantone}</div>
+          <div style="font-size:0.65rem;color:var(--accent)">🔥 ${c.hot}</div>
+        `;
+        grid.appendChild(swatch);
+      });
+    })();
+
+    // Style Cloud
+    (function() {
+      const cloud = document.getElementById('styleCloud');
+      MOCK_DATA.trends.styles.forEach(s => {
+        const tag = document.createElement('span');
+        tag.className = 'tag-cloud-item';
+        tag.style.fontSize = s.size + 'rem';
+        tag.style.background = s.color + '20';
+        tag.style.color = s.color;
+        tag.style.borderColor = s.color + '40';
+        tag.textContent = s.name;
+        cloud.appendChild(tag);
+      });
+    })();
+
+    // Recommendations
+    (function() {
+      const container = document.getElementById('recommendations');
+      const rec = MOCK_DATA.recommendations[0];
+      rec.items.forEach(item => {
+        const div = document.createElement('div');
+        div.style.cssText = 'padding:12px 0;border-bottom:1px solid var(--border)';
+        div.innerHTML = `
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+            <span style="font-weight:600;color:var(--text-bright)">${item.name}</span>
+            <span class="badge badge-accent">${item.match}% 匹配</span>
+          </div>
+          <div style="font-size:0.75rem;color:var(--text-secondary)">${item.reason}</div>
+          <div class="progress-bar" style="margin-top:8px">
+            <div class="progress-fill" style="width:${item.match}%"></div>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    })();
+
+    // Rankings
+    function renderRanking(containerId, data, type) {
+      const container = document.getElementById(containerId);
+      data.forEach(item => {
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);gap:12px';
+        const rankColor = item.rank <= 3 ? ['var(--warning)','var(--text-secondary)','var(--accent)'][item.rank-1] : 'var(--text-secondary)';
+        row.innerHTML = `
+          <span style="width:24px;height:24px;border-radius:50%;background:${rankColor}20;color:${rankColor};display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700">${item.rank}</span>
+          <span style="flex:1;font-size:0.85rem;color:var(--text-bright)">${item.name}</span>
+          ${type === 'new' ? `<span style="font-size:0.75rem;color:var(--accent)">${item.days}天前</span>` : `<span style="font-size:0.75rem;color:${item.change.startsWith('+') ? 'var(--success)' : 'var(--danger)'}">${item.change}</span>`}
+        `;
+        container.appendChild(row);
+      });
+    }
+    renderRanking('hotRanking', MOCK_DATA.rankings.hot);
+    renderRanking('risingRanking', MOCK_DATA.rankings.rising);
+    renderRanking('newArrivalRanking', MOCK_DATA.rankings.newArrival, 'new');
+
+    // Product Grid
+    (function() {
+      const grid = document.getElementById('productGrid');
+      MOCK_DATA.products.forEach(p => {
+        const card = document.createElement('div');
+        card.className = 'product-card fade-in';
+        card.innerHTML = `
+          <div class="image">${p.emoji}<span class="match-badge">${p.match}%匹配</span></div>
+          <div class="info">
+            <div class="name">${p.name}</div>
+            <div class="meta">
+              <span class="price">¥${p.price}</span>
+              <span style="font-size:0.7rem;color:var(--text-secondary)">销量 ${Utils.formatNum(p.sales)}</span>
+            </div>
+            <div class="tags">
+              <span class="tag">${p.style}</span>
+              <span class="tag">${p.scene}</span>
+              <span class="tag">${p.season}</span>
+            </div>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    })();
+
+    Utils.initSidebar();
+  </script>
+</body>
+</html>

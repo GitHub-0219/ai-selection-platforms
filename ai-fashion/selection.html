@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI选品 - AI Fashion</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <button class="mobile-toggle">☰</button>
+  <div class="overlay"></div>
+  <div class="app-layout">
+    <aside class="sidebar">
+      <div class="sidebar-logo"><h1>AI Fashion</h1><p>智能时尚选品平台</p></div>
+      <nav class="sidebar-nav" id="nav"></nav>
+      <div class="sidebar-footer">
+        <div class="avatar">AI</div>
+        <div class="user-info"><div class="name">选品专家</div><div class="role">高级分析师</div></div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="page-header">
+        <div>
+          <div class="page-title"><span>AI</span> 智能选品</div>
+          <div class="page-subtitle">基于多维度AI算法的精准选品推荐</div>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-primary" onclick="runAISelection()">🤖 AI智能匹配</button>
+          <button class="btn btn-outline">📋 选品方案</button>
+        </div>
+      </div>
+
+      <!-- Selection Filters -->
+      <div class="card" style="margin-bottom:24px">
+        <div class="card-header">
+          <div class="card-title"><span class="icon">⚙️</span> 选品条件</div>
+          <span class="badge badge-accent">AI增强</span>
+        </div>
+        <div class="grid grid-3" style="gap:16px">
+          <div>
+            <label style="font-size:0.75rem;color:var(--text-secondary);display:block;margin-bottom:6px">品类</label>
+            <select class="select" id="filterCategory">
+              <option value="">全部品类</option>
+              <option>连衣裙</option>
+              <option>外套</option>
+              <option>上衣</option>
+              <option>裤装</option>
+              <option>针织</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:0.75rem;color:var(--text-secondary);display:block;margin-bottom:6px">价格区间</label>
+            <select class="select" id="filterPrice">
+              <option value="">不限</option>
+              <option value="0-200">¥0-200</option>
+              <option value="200-500">¥200-500</option>
+              <option value="500-1000">¥500-1000</option>
+              <option value="1000+">¥1000+</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:0.75rem;color:var(--text-secondary);display:block;margin-bottom:6px">风格</label>
+            <select class="select" id="filterStyle">
+              <option value="">全部风格</option>
+              <option>新中式</option>
+              <option>极简</option>
+              <option>Y2K</option>
+              <option>法式</option>
+              <option>机能</option>
+              <option>Clean Fit</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:0.75rem;color:var(--text-secondary);display:block;margin-bottom:6px">场景</label>
+            <select class="select" id="filterScene">
+              <option value="">全部场景</option>
+              <option>职场</option>
+              <option>约会</option>
+              <option>度假</option>
+              <option>休闲</option>
+              <option>派对</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:0.75rem;color:var(--text-secondary);display:block;margin-bottom:6px">目标人群</label>
+            <select class="select" id="filterAge">
+              <option value="">不限</option>
+              <option>18-24岁</option>
+              <option>25-34岁</option>
+              <option>35-44岁</option>
+              <option>45+</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:0.75rem;color:var(--text-secondary);display:block;margin-bottom:6px">季节</label>
+            <select class="select" id="filterSeason">
+              <option value="">全部季节</option>
+              <option>春夏</option>
+              <option>秋冬</option>
+              <option>四季</option>
+            </select>
+          </div>
+        </div>
+        <div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap">
+          <span class="tag active">🔥 热卖爆款</span>
+          <span class="tag">📈 高增长</span>
+          <span class="tag">💰 高利润</span>
+          <span class="tag">🆕 新品潜力</span>
+          <span class="tag">⚡ 快返款</span>
+        </div>
+      </div>
+
+      <!-- AI Results -->
+      <div id="aiResults">
+        <!-- AI Match Results -->
+        <div class="card" style="margin-bottom:24px">
+          <div class="card-header">
+            <div class="card-title"><span class="icon">🎯</span> AI智能匹配结果</div>
+            <span class="badge badge-success">已找到 8 个匹配商品</span>
+          </div>
+          <div class="grid grid-2" id="matchResults"></div>
+        </div>
+
+        <!-- Competitor Analysis -->
+        <div class="grid grid-2" style="margin-bottom:24px">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><span class="icon">⚔️</span> 竞品分析</div>
+            </div>
+            <div id="competitorAnalysis"></div>
+          </div>
+
+          <!-- Profit Prediction -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><span class="icon">💰</span> 利润预测</div>
+            </div>
+            <div id="profitPrediction"></div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/common.js"></script>
+  <script>
+    document.getElementById('nav').innerHTML = getNavHTML('selection.html');
+
+    // Render match results
+    function renderMatchResults() {
+      const container = document.getElementById('matchResults');
+      container.innerHTML = '';
+      const products = MOCK_DATA.products;
+      products.forEach(p => {
+        const profit = ((p.price - p.cost) / p.price * 100).toFixed(1);
+        const card = document.createElement('div');
+        card.style.cssText = 'display:flex;gap:16px;padding:16px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:12px;transition:var(--transition)';
+        card.innerHTML = `
+          <div style="width:80px;height:80px;border-radius:var(--radius-sm);background:linear-gradient(135deg,rgba(108,92,231,0.2),rgba(0,210,211,0.1));display:flex;align-items:center;justify-content:center;font-size:2.2rem;flex-shrink:0">${p.emoji}</div>
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
+              <div style="font-weight:600;color:var(--text-bright);font-size:0.9rem">${p.name}</div>
+              <span class="badge ${p.match>=90?'badge-success':p.match>=80?'badge-accent':'badge-warning'}">${p.match}%</span>
+            </div>
+            <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap">
+              <span class="tag">${p.style}</span>
+              <span class="tag">${p.scene}</span>
+              <span class="tag">${p.season}</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <span style="color:var(--accent);font-weight:700;font-size:1.1rem">¥${p.price}</span>
+              <div style="text-align:right">
+                <div style="font-size:0.7rem;color:var(--text-secondary)">预估利润率</div>
+                <div style="font-size:0.9rem;font-weight:700;color:${profit>60?'var(--success)':profit>40?'var(--warning)':'var(--danger)'}">${profit}%</div>
+              </div>
+            </div>
+            <div style="margin-top:8px;font-size:0.75rem;color:var(--text-secondary);background:rgba(0,210,211,0.05);padding:8px;border-radius:6px">
+              🤖 AI推荐理由：${p.match>=90?'当前市场热度极高，搜索量持续攀升，建议优先备货':'市场需求稳定增长，竞争适中，利润空间良好'}
+            </div>
+          </div>
+        `;
+        card.addEventListener('mouseenter', () => card.style.borderColor = 'rgba(108,92,231,0.3)');
+        card.addEventListener('mouseleave', () => card.style.borderColor = 'var(--border)');
+        container.appendChild(card);
+      });
+    }
+    renderMatchResults();
+
+    // Competitor Analysis
+    (function() {
+      const container = document.getElementById('competitorAnalysis');
+      const competitors = [
+        { name: '品牌A旗舰店', price: 459, sales: '8,200', rating: 4.8, advantage: '品牌溢价高' },
+        { name: '品牌B工厂店', price: 299, sales: '12,500', rating: 4.5, advantage: '性价比突出' },
+        { name: '品牌C设计师', price: 699, sales: '3,800', rating: 4.9, advantage: '设计独特' },
+        { name: '品牌D新锐', price: 359, sales: '6,100', rating: 4.6, advantage: '营销强势' }
+      ];
+      container.innerHTML = `
+        <table class="data-table">
+          <thead><tr><th>竞品</th><th>价格</th><th>月销</th><th>评分</th><th>优势</th></tr></thead>
+          <tbody>${competitors.map(c => `
+            <tr>
+              <td style="font-weight:600;color:var(--text-bright)">${c.name}</td>
+              <td style="color:var(--accent)">¥${c.price}</td>
+              <td>${c.sales}</td>
+              <td><span style="color:var(--warning)">★</span> ${c.rating}</td>
+              <td><span class="badge badge-primary">${c.advantage}</span></td>
+            </tr>
+          `).join('')}</tbody>
+        </table>
+      `;
+    })();
+
+    // Profit Prediction
+    (function() {
+      const container = document.getElementById('profitPrediction');
+      const items = MOCK_DATA.products.slice(0, 5);
+      items.forEach(p => {
+        const profit = ((p.price - p.cost) / p.price * 100).toFixed(1);
+        const monthlyProfit = Math.floor((p.price - p.cost) * p.sales * 0.01);
+        const row = document.createElement('div');
+        row.style.cssText = 'padding:12px 0;border-bottom:1px solid var(--border)';
+        row.innerHTML = `
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <span style="font-size:0.85rem;color:var(--text-bright)">${p.emoji} ${p.name.slice(0,8)}...</span>
+            <span style="font-size:0.9rem;font-weight:700;color:var(--success)">¥${monthlyProfit.toLocaleString()}/月</span>
+          </div>
+          <div style="display:flex;gap:16px;font-size:0.7rem;color:var(--text-secondary)">
+            <span>售价 ¥${p.price}</span>
+            <span>成本 ¥${p.cost}</span>
+            <span style="color:${profit>60?'var(--success)':profit>40?'var(--warning)':'var(--danger)'}">利润率 ${profit}%</span>
+          </div>
+          <div class="progress-bar" style="margin-top:8px">
+            <div class="progress-fill" style="width:${profit}%;background:${profit>60?'var(--success)':profit>40?'var(--warning)':'var(--danger)'}"></div>
+          </div>
+        `;
+        container.appendChild(row);
+      });
+    })();
+
+    // AI Selection button
+    function runAISelection() {
+      const btn = event.target;
+      btn.textContent = '⏳ AI分析中...';
+      btn.disabled = true;
+      setTimeout(() => {
+        btn.textContent = '🤖 AI智能匹配';
+        btn.disabled = false;
+        document.getElementById('aiResults').style.opacity = '0';
+        setTimeout(() => {
+          document.getElementById('aiResults').style.opacity = '1';
+          document.getElementById('aiResults').style.transition = 'opacity 0.5s';
+        }, 100);
+      }, 1500);
+    }
+
+    // Tag toggle
+    document.querySelectorAll('.card .tag').forEach(tag => {
+      tag.addEventListener('click', () => {
+        document.querySelectorAll('.card .tag').forEach(t => t.classList.remove('active'));
+        tag.classList.add('active');
+      });
+    });
+
+    Utils.initSidebar();
+  </script>
+</body>
+</html>

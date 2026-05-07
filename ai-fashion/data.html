@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>数据中心 - AI Fashion</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .chart-container { position:relative; }
+    .donut { width:160px;height:160px;border-radius:50%;position:relative;margin:0 auto; }
+    .donut-center { position:absolute;inset:30px;background:var(--bg-dark);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-direction:column; }
+    .donut-center .val { font-size:1.6rem;font-weight:800;color:var(--text-bright); }
+    .donut-center .lbl { font-size:0.7rem;color:var(--text-secondary); }
+    .competitor-bar { display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border); }
+    .competitor-bar .bar-bg { flex:1;height:8px;background:rgba(255,255,255,0.08);border-radius:4px;overflow:hidden; }
+    .competitor-bar .bar-fill { height:100%;border-radius:4px;transition:width 1s ease; }
+  </style>
+</head>
+<body>
+  <button class="mobile-toggle">☰</button>
+  <div class="overlay"></div>
+  <div class="app-layout">
+    <aside class="sidebar">
+      <div class="sidebar-logo"><h1>AI Fashion</h1><p>智能时尚选品平台</p></div>
+      <nav class="sidebar-nav" id="nav"></nav>
+      <div class="sidebar-footer">
+        <div class="avatar">AI</div>
+        <div class="user-info"><div class="name">选品专家</div><div class="role">高级分析师</div></div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="page-header">
+        <div>
+          <div class="page-title"><span>数据</span>中心</div>
+          <div class="page-subtitle">全维度数据洞察与分析看板</div>
+        </div>
+        <div class="header-actions">
+          <select class="select" style="width:120px">
+            <option>最近7天</option>
+            <option selected>最近30天</option>
+            <option>最近90天</option>
+          </select>
+          <button class="btn btn-primary">📊 导出报告</button>
+        </div>
+      </div>
+
+      <!-- Stats Row -->
+      <div class="grid grid-4" style="margin-bottom:24px">
+        <div class="stat-card"><div class="stat-label">总销售额</div><div class="stat-value" data-count="289">0</div><div class="stat-change up">▲ 18.5%万</div></div>
+        <div class="stat-card"><div class="stat-label">订单量</div><div class="stat-value" data-count="12580">0</div><div class="stat-change up">▲ 12.3%</div></div>
+        <div class="stat-card"><div class="stat-label">客单价</div><div class="stat-value">¥<span data-count="328">0</span></div><div class="stat-change up">▲ 5.2%</div></div>
+        <div class="stat-card"><div class="stat-label">转化率</div><div class="stat-value"><span data-count="3">0</span>.8%</div><div class="stat-change down">▼ 0.3%</div></div>
+      </div>
+
+      <!-- Charts Row -->
+      <div class="grid grid-2" style="margin-bottom:24px">
+        <!-- Monthly Sales Chart -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span class="icon">📈</span> 月度销售趋势</div>
+            <span class="badge badge-accent">万元</span>
+          </div>
+          <div id="monthlyChart" class="bar-chart" style="height:200px;margin-bottom:30px"></div>
+        </div>
+
+        <!-- Category Donut -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span class="icon">🍩</span> 品类分布</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:30px;justify-content:center;padding:20px">
+            <div id="categoryDonut" class="donut" style="background:conic-gradient(#6C5CE7 0% 35%, #00D2D3 35% 57%, #a29bfe 57% 75%, #7efff5 75% 90%, #feca57 90% 100%)">
+              <div class="donut-center">
+                <div class="val">100%</div>
+                <div class="lbl">总销售额</div>
+              </div>
+            </div>
+            <div id="categoryLegend"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- User Profile + Competitor -->
+      <div class="grid grid-2" style="margin-bottom:24px">
+        <!-- User Profile -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span class="icon">👥</span> 用户画像分析</div>
+          </div>
+          <div id="userProfile"></div>
+        </div>
+
+        <!-- Competitor Monitor -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span class="icon">🔍</span> 竞品监控</div>
+            <span class="badge badge-danger">实时</span>
+          </div>
+          <div id="competitorMonitor"></div>
+        </div>
+      </div>
+
+      <!-- Hot Products Table -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span class="icon">🔥</span> 热销商品排行</div>
+          <div style="display:flex;gap:6px">
+            <span class="badge badge-accent">实时更新</span>
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="data-table" id="hotTable">
+            <thead>
+              <tr><th>排名</th><th>商品</th><th>品类</th><th>价格</th><th>销量</th><th>趋势</th><th>库存</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/common.js"></script>
+  <script>
+    document.getElementById('nav').innerHTML = getNavHTML('data.html');
+
+    // Animate numbers
+    document.querySelectorAll('[data-count]').forEach(el => {
+      const target = parseInt(el.dataset.count);
+      setTimeout(() => Utils.animateNum(el, target), 500);
+    });
+
+    // Monthly Chart
+    (function() {
+      const container = document.getElementById('monthlyChart');
+      const data = MOCK_DATA.salesData.monthly;
+      const max = Math.max(...data.map(d => d.value));
+      data.forEach(d => {
+        const item = document.createElement('div');
+        item.className = 'bar-chart-item';
+        item.style.height = (d.value / max * 100) + '%';
+        item.innerHTML = `<span class="value">${d.value}</span><span class="label">${d.month}</span>`;
+        container.appendChild(item);
+      });
+    })();
+
+    // Category Legend
+    (function() {
+      const container = document.getElementById('categoryLegend');
+      const colors = ['#6C5CE7','#00D2D3','#a29bfe','#7efff5','#feca57'];
+      MOCK_DATA.salesData.categories.forEach((c, i) => {
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:8px';
+        row.innerHTML = `
+          <div style="width:12px;height:12px;border-radius:3px;background:${colors[i]}"></div>
+          <span style="font-size:0.8rem;color:var(--text-bright);min-width:50px">${c.name}</span>
+          <span style="font-size:0.75rem;color:var(--accent)">${c.value}%</span>
+        `;
+        container.appendChild(row);
+      });
+    })();
+
+    // User Profile
+    (function() {
+      const container = document.getElementById('userProfile');
+      const profiles = [
+        { label: '18-24岁 学生党', value: 30, color: '#6C5CE7', desc: '追求潮流，价格敏感' },
+        { label: '25-34岁 职场白领', value: 42, color: '#00D2D3', desc: '品质优先，注重品牌' },
+        { label: '35-44岁 精致妈妈', value: 18, color: '#a29bfe', desc: '舒适实用，家庭消费' },
+        { label: '45+岁 成熟女性', value: 10, color: '#7efff5', desc: '高端定位，经典款式' }
+      ];
+      profiles.forEach(p => {
+        const row = document.createElement('div');
+        row.style.cssText = 'margin-bottom:16px';
+        row.innerHTML = `
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+            <span style="font-size:0.85rem;color:var(--text-bright)">${p.label}</span>
+            <span style="font-size:0.85rem;font-weight:700;color:${p.color}">${p.value}%</span>
+          </div>
+          <div class="progress-bar" style="margin-bottom:4px">
+            <div class="progress-fill" style="width:${p.value}%;background:${p.color}"></div>
+          </div>
+          <div style="font-size:0.7rem;color:var(--text-secondary)">${p.desc}</div>
+        `;
+        container.appendChild(row);
+      });
+    })();
+
+    // Competitor Monitor
+    (function() {
+      const container = document.getElementById('competitorMonitor');
+      const comps = [
+        { name: '竞品A', score: 92, color: '#ff6b6b', metric: '月销 12,500' },
+        { name: '竞品B', score: 78, color: '#feca57', metric: '月销 8,200' },
+        { name: '竞品C', score: 85, color: '#1dd1a1', metric: '月销 9,800' },
+        { name: '竞品D', score: 65, color: '#6C5CE7', metric: '月销 5,100' }
+      ];
+      comps.forEach(c => {
+        const row = document.createElement('div');
+        row.className = 'competitor-bar';
+        row.innerHTML = `
+          <span style="min-width:60px;font-size:0.8rem;color:var(--text-bright)">${c.name}</span>
+          <div class="bar-bg"><div class="bar-fill" style="width:${c.score}%;background:${c.color}"></div></div>
+          <span style="font-size:0.75rem;color:var(--accent);min-width:30px">${c.score}</span>
+          <span style="font-size:0.65rem;color:var(--text-secondary);min-width:80px">${c.metric}</span>
+        `;
+        container.appendChild(row);
+      });
+    })();
+
+    // Hot Table
+    (function() {
+      const tbody = document.querySelector('#hotTable tbody');
+      MOCK_DATA.products.forEach((p, i) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><span style="width:24px;height:24px;border-radius:50%;background:${i<3?'var(--warning)':'rgba(255,255,255,0.05)'};color:${i<3?'#000':'var(--text-secondary)'};display:inline-flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700">${i+1}</span></td>
+          <td style="color:var(--text-bright)">${p.emoji} ${p.name}</td>
+          <td><span class="badge badge-primary">${p.category}</span></td>
+          <td style="color:var(--accent)">¥${p.price}</td>
+          <td>${Utils.formatNum(p.sales)}</td>
+          <td><span style="color:var(--success)">▲ ${Utils.rand(5,30)}%</span></td>
+          <td><span class="badge ${p.stock>500?'badge-success':p.stock>200?'badge-warning':'badge-danger'}">${p.stock}</span></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    })();
+
+    Utils.initSidebar();
+  </script>
+</body>
+</html>

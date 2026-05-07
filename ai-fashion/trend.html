@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>趋势分析 - AI Fashion</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <button class="mobile-toggle">☰</button>
+  <div class="overlay"></div>
+  <div class="app-layout">
+    <aside class="sidebar">
+      <div class="sidebar-logo"><h1>AI Fashion</h1><p>智能时尚选品平台</p></div>
+      <nav class="sidebar-nav" id="nav"></nav>
+      <div class="sidebar-footer">
+        <div class="avatar">AI</div>
+        <div class="user-info"><div class="name">选品专家</div><div class="role">高级分析师</div></div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="page-header">
+        <div>
+          <div class="page-title"><span>趋势</span>分析</div>
+          <div class="page-subtitle">2024-2026 时尚趋势全景分析</div>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-primary">📊 生成报告</button>
+          <button class="btn btn-outline">⬇️ 导出数据</button>
+        </div>
+      </div>
+
+      <!-- Timeline -->
+      <div class="card" style="margin-bottom:24px">
+        <div class="card-header">
+          <div class="card-title"><span class="icon">📅</span> 流行趋势时间轴</div>
+          <div class="tabs" style="border:none;margin:0">
+            <div class="tab active">2024</div>
+            <div class="tab">2025</div>
+            <div class="tab">2026</div>
+          </div>
+        </div>
+        <div id="timeline" style="position:relative;padding:20px 0"></div>
+      </div>
+
+      <!-- Color Trends -->
+      <div class="grid grid-2" style="margin-bottom:24px">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span class="icon">🎨</span> 色彩趋势面板</div>
+            <span class="badge badge-primary">Pantone 2025</span>
+          </div>
+          <div id="colorPanel" style="display:grid;grid-template-columns:repeat(4,1fr);gap:20px;padding:10px"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span class="icon">🧵</span> 面料趋势热度</div>
+          </div>
+          <div id="fabricChart"></div>
+        </div>
+      </div>
+
+      <!-- Style Tag Cloud -->
+      <div class="card" style="margin-bottom:24px">
+        <div class="card-header">
+          <div class="card-title"><span class="icon">☁️</span> 风格标签云</div>
+          <div style="display:flex;gap:6px">
+            <span class="badge badge-accent">极简</span>
+            <span class="badge badge-primary">复古</span>
+            <span class="badge badge-warning">Y2K</span>
+            <span class="badge badge-success">新中式</span>
+          </div>
+        </div>
+        <div id="styleCloud" class="tag-cloud" style="min-height:250px"></div>
+      </div>
+
+      <!-- Trend Details Grid -->
+      <div class="grid grid-3">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span class="icon">📊</span> 风格热度排行</div>
+          </div>
+          <div id="styleRanking"></div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span class="icon">🔍</span> 搜索热词</div>
+          </div>
+          <div id="hotKeywords"></div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span class="icon">📱</span> 社交热度</div>
+          </div>
+          <div id="socialHeat"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/common.js"></script>
+  <script>
+    document.getElementById('nav').innerHTML = getNavHTML('trend.html');
+
+    // Timeline
+    (function() {
+      const container = document.getElementById('timeline');
+      const colors = ['#6C5CE7','#00D2D3','#a29bfe','#7efff5','#6C5CE7'];
+      MOCK_DATA.timeline.forEach((t, i) => {
+        const item = document.createElement('div');
+        item.style.cssText = `display:flex;align-items:flex-start;margin-bottom:24px;position:relative;padding-left:40px`;
+        item.innerHTML = `
+          <div style="position:absolute;left:0;top:0;width:24px;height:24px;border-radius:50%;background:${colors[i]};display:flex;align-items:center;justify-content:center;font-size:0.65rem;color:#fff;font-weight:700;z-index:2">${i+1}</div>
+          ${i < MOCK_DATA.timeline.length - 1 ? `<div style="position:absolute;left:11px;top:24px;width:2px;height:calc(100%);background:${colors[i]}40"></div>` : ''}
+          <div style="flex:1;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px">
+            <div style="font-weight:700;color:var(--text-bright);margin-bottom:8px;font-size:1rem">${t.season}</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
+              ${t.styles.map(s => `<span class="badge badge-primary">${s}</span>`).join('')}
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              ${t.colors.map(c => `<span style="font-size:0.75rem;color:var(--accent)">● ${c}</span>`).join('')}
+            </div>
+          </div>
+        `;
+        container.appendChild(item);
+      });
+    })();
+
+    // Color Panel
+    (function() {
+      const panel = document.getElementById('colorPanel');
+      MOCK_DATA.trends.colors.forEach(c => {
+        const swatch = document.createElement('div');
+        swatch.className = 'color-swatch';
+        swatch.innerHTML = `
+          <div class="circle" style="background:${c.hex};box-shadow:0 0 20px ${c.hex}50;width:70px;height:70px"></div>
+          <div class="name" style="font-weight:600">${c.name}</div>
+          <div class="code">${c.pantone}</div>
+          <div style="margin-top:4px;font-size:0.7rem;color:var(--accent)">热度 ${c.hot}</div>
+        `;
+        panel.appendChild(swatch);
+      });
+    })();
+
+    // Fabric Chart
+    (function() {
+      const container = document.getElementById('fabricChart');
+      const max = Math.max(...MOCK_DATA.trends.fabrics.map(f => f.heat));
+      MOCK_DATA.trends.fabrics.forEach(f => {
+        const row = document.createElement('div');
+        row.style.cssText = 'margin-bottom:14px';
+        row.innerHTML = `
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+            <span style="font-size:0.85rem;color:var(--text-bright)">${f.name}</span>
+            <span style="font-size:0.75rem;color:var(--accent)">${f.heat} ${f.change}</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width:${f.heat/max*100}%;transition:width 1.5s ease"></div>
+          </div>
+        `;
+        container.appendChild(row);
+      });
+    })();
+
+    // Style Cloud
+    (function() {
+      const cloud = document.getElementById('styleCloud');
+      MOCK_DATA.trends.styles.forEach(s => {
+        const tag = document.createElement('span');
+        tag.className = 'tag-cloud-item';
+        tag.style.fontSize = s.size + 'rem';
+        tag.style.background = s.color + '15';
+        tag.style.color = s.color;
+        tag.style.borderColor = s.color + '30';
+        tag.textContent = s.name;
+        cloud.appendChild(tag);
+      });
+    })();
+
+    // Style Ranking
+    (function() {
+      const container = document.getElementById('styleRanking');
+      MOCK_DATA.trends.hotSelling.forEach((s, i) => {
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);gap:10px';
+        row.innerHTML = `
+          <span style="width:20px;height:20px;border-radius:50%;background:${i<3?'var(--primary)':'rgba(255,255,255,0.05)'};color:${i<3?'#fff':'var(--text-secondary)'};display:flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:700">${i+1}</span>
+          <span style="flex:1;font-size:0.8rem;color:var(--text-bright)">${s.name}</span>
+          <span style="font-size:0.75rem;color:${s.trend==='up'?'var(--success)':'var(--danger)'}">${s.change}</span>
+        `;
+        container.appendChild(row);
+      });
+    })();
+
+    // Hot Keywords
+    (function() {
+      const container = document.getElementById('hotKeywords');
+      const keywords = ['新中式旗袍','极简西装','Y2K低腰裤','法式碎花裙','美拉德大衣','机能工装裤','Clean Fit T恤','多巴胺配色','废土风牛仔','老钱风毛衣'];
+      keywords.forEach((k, i) => {
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);gap:10px';
+        const heat = 100 - i * 8;
+        row.innerHTML = `
+          <span style="font-size:0.8rem;color:var(--text-bright);flex:1">${k}</span>
+          <div class="sparkline" style="width:60px">${Array.from({length:6},() => `<div class="sparkline-bar" style="height:${Utils.rand(30,100)}%;width:3px;background:var(--accent);border-radius:1px"></div>`).join('')}</div>
+          <span style="font-size:0.7rem;color:var(--accent)">${heat}</span>
+        `;
+        container.appendChild(row);
+      });
+    })();
+
+    // Social Heat
+    (function() {
+      const container = document.getElementById('socialHeat');
+      const platforms = [
+        { name: '小红书', heat: 92, emoji: '📕' },
+        { name: '抖音', heat: 88, emoji: '🎵' },
+        { name: '微博', heat: 75, emoji: '💬' },
+        { name: 'B站', heat: 68, emoji: '📺' },
+        { name: 'Instagram', heat: 82, emoji: '📸' }
+      ];
+      platforms.forEach(p => {
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);gap:10px';
+        row.innerHTML = `
+          <span style="font-size:1.2rem">${p.emoji}</span>
+          <span style="flex:1;font-size:0.85rem;color:var(--text-bright)">${p.name}</span>
+          <div class="progress-bar" style="width:100px">
+            <div class="progress-fill" style="width:${p.heat}%"></div>
+          </div>
+          <span style="font-size:0.75rem;color:var(--accent);min-width:30px">${p.heat}</span>
+        `;
+        container.appendChild(row);
+      });
+    })();
+
+    Utils.initSidebar();
+  </script>
+</body>
+</html>

@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI设计灵感 - AI Fashion</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .design-card { background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;transition:var(--transition);cursor:pointer; }
+    .design-card:hover { transform:translateY(-4px);box-shadow:var(--shadow);border-color:rgba(108,92,231,0.3); }
+    .design-card .visual { height:160px;background:linear-gradient(135deg,rgba(108,92,231,0.15),rgba(0,210,211,0.1));display:flex;align-items:center;justify-content:center;font-size:3.5rem;position:relative; }
+    .design-card .body { padding:16px; }
+    .design-card .title { font-weight:700;color:var(--text-bright);margin-bottom:6px; }
+    .design-card .desc { font-size:0.8rem;color:var(--text-secondary);margin-bottom:10px; }
+    .color-wheel { width:200px;height:200px;border-radius:50%;background:conic-gradient(#ff6b6b,#feca57,#1dd1a1,#00D2D3,#6C5CE7,#a29bfe,#ff6b6b);position:relative;margin:0 auto;cursor:pointer; }
+    .color-wheel-inner { position:absolute;inset:40px;background:var(--bg-dark);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-direction:column; }
+    .palette-row { display:flex;gap:4px;margin-bottom:12px;align-items:center; }
+    .palette-swatch { width:40px;height:40px;border-radius:8px;cursor:pointer;transition:var(--transition);border:2px solid transparent; }
+    .palette-swatch:hover { transform:scale(1.15);border-color:#fff; }
+    .match-item { display:flex;gap:12px;padding:12px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:10px; }
+    .match-item .preview { width:60px;height:60px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0; }
+  </style>
+</head>
+<body>
+  <button class="mobile-toggle">☰</button>
+  <div class="overlay"></div>
+  <div class="app-layout">
+    <aside class="sidebar">
+      <div class="sidebar-logo"><h1>AI Fashion</h1><p>智能时尚选品平台</p></div>
+      <nav class="sidebar-nav" id="nav"></nav>
+      <div class="sidebar-footer">
+        <div class="avatar">AI</div>
+        <div class="user-info"><div class="name">选品专家</div><div class="role">高级分析师</div></div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="page-header">
+        <div>
+          <div class="page-title"><span>AI</span> 设计灵感</div>
+          <div class="page-subtitle">AI驱动的时尚设计趋势与灵感库</div>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-primary">✨ 生成灵感</button>
+          <button class="btn btn-outline">📁 收藏夹</button>
+        </div>
+      </div>
+
+      <!-- Design Trend Cards -->
+      <div class="card" style="margin-bottom:24px">
+        <div class="card-header">
+          <div class="card-title"><span class="icon">🖼️</span> 设计趋势图鉴</div>
+          <div style="display:flex;gap:6px">
+            <span class="badge badge-accent">2025春夏</span>
+            <span class="badge badge-primary">热门</span>
+          </div>
+        </div>
+        <div class="grid grid-3" id="designGrid"></div>
+      </div>
+
+      <!-- AI Mix & Match -->
+      <div class="grid grid-2" style="margin-bottom:24px">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span class="icon">👗</span> AI搭配推荐</div>
+            <select class="select" style="width:120px">
+              <option>职场通勤</option>
+              <option>约会出行</option>
+              <option>休闲日常</option>
+              <option>度假旅游</option>
+            </select>
+          </div>
+          <div id="mixMatch"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span class="icon">🎨</span> 色彩搭配工具</div>
+            <span class="badge badge-warning">AI生成</span>
+          </div>
+          <div id="colorTool"></div>
+        </div>
+      </div>
+
+      <!-- Color Palettes -->
+      <div class="card" style="margin-bottom:24px">
+        <div class="card-header">
+          <div class="card-title"><span class="icon">🌈</span> 热门色板</div>
+          <button class="btn btn-outline btn-sm">🔄 换一批</button>
+        </div>
+        <div class="grid grid-2" id="paletteGrid"></div>
+      </div>
+
+      <!-- Inspiration Gallery -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span class="icon">💡</span> AI灵感素材库</div>
+          <div style="display:flex;gap:6px">
+            <span class="tag active">全部</span>
+            <span class="tag">面料</span>
+            <span class="tag">色彩</span>
+            <span class="tag">廓形</span>
+            <span class="tag">细节</span>
+          </div>
+        </div>
+        <div class="grid grid-4" id="inspirationGrid"></div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/common.js"></script>
+  <script>
+    document.getElementById('nav').innerHTML = getNavHTML('design.html');
+
+    // Design Cards
+    (function() {
+      const grid = document.getElementById('designGrid');
+      MOCK_DATA.designs.forEach(d => {
+        const card = document.createElement('div');
+        card.className = 'design-card fade-in';
+        card.innerHTML = `
+          <div class="visual">${d.emoji}</div>
+          <div class="body">
+            <div class="title">${d.title}</div>
+            <div class="desc">${d.desc}</div>
+            <div style="display:flex;gap:4px;flex-wrap:wrap">
+              ${d.tags.map(t => `<span class="tag">${t}</span>`).join('')}
+            </div>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    })();
+
+    // Mix & Match
+    (function() {
+      const container = document.getElementById('mixMatch');
+      const outfits = [
+        { name: '极简通勤套装', items: ['廓形西装外套','高腰烟管裤','真丝衬衫','尖头高跟鞋'], emoji: '👔', match: 95 },
+        { name: '法式约会Look', items: ['碎花茶歇裙','草编手提包','玛丽珍鞋','珍珠耳饰'], emoji: '🌸', match: 91 },
+        { name: '周末休闲搭', items: ['Clean Fit T恤','直筒牛仔裤','帆布鞋','棒球帽'], emoji: '🧢', match: 88 }
+      ];
+      outfits.forEach(o => {
+        const div = document.createElement('div');
+        div.className = 'match-item';
+        div.innerHTML = `
+          <div class="preview" style="background:linear-gradient(135deg,rgba(108,92,231,0.15),rgba(0,210,211,0.1))">${o.emoji}</div>
+          <div style="flex:1">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+              <span style="font-weight:600;color:var(--text-bright)">${o.name}</span>
+              <span class="badge badge-accent">${o.match}%</span>
+            </div>
+            <div style="display:flex;gap:4px;flex-wrap:wrap">
+              ${o.items.map(i => `<span class="tag">${i}</span>`).join('')}
+            </div>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    })();
+
+    // Color Tool
+    (function() {
+      const container = document.getElementById('colorTool');
+      container.innerHTML = `
+        <div style="display:flex;gap:20px;align-items:center;flex-wrap:wrap;justify-content:center;padding:20px">
+          <div style="text-align:center">
+            <div style="width:80px;height:80px;border-radius:50%;background:#6C5CE7;margin:0 auto 8px;box-shadow:0 0 15px #6C5CE750"></div>
+            <div style="font-size:0.75rem;color:var(--text-bright)">主色</div>
+            <div style="font-size:0.65rem;color:var(--text-secondary)">#6C5CE7</div>
+          </div>
+          <div style="font-size:1.5rem;color:var(--text-secondary)">+</div>
+          <div style="text-align:center">
+            <div style="width:80px;height:80px;border-radius:50%;background:#00D2D3;margin:0 auto 8px;box-shadow:0 0 15px #00D2D350"></div>
+            <div style="font-size:0.75rem;color:var(--text-bright)">辅色</div>
+            <div style="font-size:0.65rem;color:var(--text-secondary)">#00D2D3</div>
+          </div>
+          <div style="font-size:1.5rem;color:var(--text-secondary)">+</div>
+          <div style="text-align:center">
+            <div style="width:80px;height:80px;border-radius:50%;background:#F8F0E3;margin:0 auto 8px;box-shadow:0 0 15px #F8F0E350"></div>
+            <div style="font-size:0.75rem;color:var(--text-bright)">点缀</div>
+            <div style="font-size:0.65rem;color:var(--text-secondary)">#F8F0E3</div>
+          </div>
+        </div>
+        <div style="text-align:center;padding:0 20px 10px">
+          <p style="font-size:0.8rem;color:var(--text-secondary);margin-bottom:12px">AI推荐搭配：科技紫+数据青+暖白，适用于春夏新品系列</p>
+          <button class="btn btn-primary btn-sm">🎨 生成更多配色</button>
+        </div>
+      `;
+    })();
+
+    // Color Palettes
+    (function() {
+      const grid = document.getElementById('paletteGrid');
+      MOCK_DATA.palettes.forEach(p => {
+        const row = document.createElement('div');
+        row.className = 'palette-row';
+        row.style.marginBottom = '0';
+        row.innerHTML = `
+          <span style="min-width:80px;font-size:0.8rem;color:var(--text-bright)">${p.name}</span>
+          ${p.colors.map(c => `<div class="palette-swatch" style="background:${c}" title="${c}"></div>`).join('')}
+          <button class="btn btn-ghost btn-sm" style="margin-left:8px">📋</button>
+        `;
+        grid.appendChild(row);
+      });
+    })();
+
+    // Inspiration Grid
+    (function() {
+      const grid = document.getElementById('inspirationGrid');
+      const items = [
+        { emoji: '🧵', label: '醋酸缎面', category: '面料' },
+        { emoji: '🌸', label: '立体花卉', category: '细节' },
+        { emoji: '📐', label: '不对称剪裁', category: '廓形' },
+        { emoji: '🎨', label: '渐变扎染', category: '色彩' },
+        { emoji: '✨', label: '金属装饰', category: '细节' },
+        { emoji: '🔲', label: '几何拼接', category: '廓形' },
+        { emoji: '🌿', label: '植物印花', category: '色彩' },
+        { emoji: '💎', label: '珠绣工艺', category: '细节' }
+      ];
+      items.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'design-card';
+        card.innerHTML = `
+          <div class="visual" style="height:120px;font-size:2.5rem">${item.emoji}</div>
+          <div class="body" style="padding:12px">
+            <div style="font-weight:600;color:var(--text-bright);font-size:0.85rem">${item.label}</div>
+            <span class="badge badge-primary" style="margin-top:6px">${item.category}</span>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    })();
+
+    // Tag toggle
+    document.querySelectorAll('.tag').forEach(tag => {
+      tag.addEventListener('click', function() {
+        const siblings = this.parentElement.querySelectorAll('.tag');
+        siblings.forEach(t => t.classList.remove('active'));
+        this.classList.add('active');
+      });
+    });
+
+    Utils.initSidebar();
+  </script>
+</body>
+</html>

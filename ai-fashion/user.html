@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>工作台 - AI Fashion</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .workspace-grid { display:grid;grid-template-columns:2fr 1fr;gap:20px; }
+    .task-item { display:flex;align-items:center;gap:12px;padding:12px;border-bottom:1px solid var(--border); }
+    .task-item:last-child { border-bottom:none; }
+    .task-check { width:18px;height:18px;border-radius:50%;border:2px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:var(--transition);flex-shrink:0; }
+    .task-check.done { background:var(--success);border-color:var(--success);color:#fff; }
+    .quick-action { display:flex;flex-direction:column;align-items:center;gap:8px;padding:20px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;transition:var(--transition);text-align:center; }
+    .quick-action:hover { border-color:var(--primary);transform:translateY(-2px);box-shadow:var(--shadow-glow); }
+    .quick-action .icon { font-size:1.8rem; }
+    .quick-action .label { font-size:0.8rem;color:var(--text); }
+    .activity-item { display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border); }
+    .activity-dot { width:8px;height:8px;border-radius:50%;margin-top:6px;flex-shrink:0; }
+  </style>
+</head>
+<body>
+  <button class="mobile-toggle">☰</button>
+  <div class="overlay"></div>
+  <div class="app-layout">
+    <aside class="sidebar">
+      <div class="sidebar-logo"><h1>AI Fashion</h1><p>智能时尚选品平台</p></div>
+      <nav class="sidebar-nav" id="nav"></nav>
+      <div class="sidebar-footer">
+        <div class="avatar">AI</div>
+        <div class="user-info"><div class="name">选品专家</div><div class="role">高级分析师</div></div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="page-header">
+        <div>
+          <div class="page-title">👋 欢迎回来，<span>选品专家</span></div>
+          <div class="page-subtitle">今天是 2025年5月7日 星期三 · 今日待处理 3 项任务</div>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-primary">➕ 新建选品方案</button>
+        </div>
+      </div>
+
+      <div class="workspace-grid">
+        <div>
+          <!-- Quick Actions -->
+          <div class="card" style="margin-bottom:20px">
+            <div class="card-header">
+              <div class="card-title"><span class="icon">⚡</span> 快捷操作</div>
+            </div>
+            <div class="grid grid-4" style="gap:12px">
+              <div class="quick-action" onclick="location.href='selection.html'">
+                <div class="icon">🎯</div>
+                <div class="label">AI选品</div>
+              </div>
+              <div class="quick-action" onclick="location.href='trend.html'">
+                <div class="icon">📈</div>
+                <div class="label">趋势分析</div>
+              </div>
+              <div class="quick-action" onclick="location.href='design.html'">
+                <div class="icon">🎨</div>
+                <div class="label">设计灵感</div>
+              </div>
+              <div class="quick-action" onclick="location.href='data.html'">
+                <div class="icon">📊</div>
+                <div class="label">数据中心</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- My Tasks -->
+          <div class="card" style="margin-bottom:20px">
+            <div class="card-header">
+              <div class="card-title"><span class="icon">📋</span> 我的任务</div>
+              <span class="badge badge-warning">3 待处理</span>
+            </div>
+            <div id="taskList">
+              <div class="task-item">
+                <div class="task-check" onclick="this.classList.toggle('done')"></div>
+                <div style="flex:1">
+                  <div style="font-size:0.85rem;color:var(--text-bright)">完成2025春夏选品方案</div>
+                  <div style="font-size:0.7rem;color:var(--text-secondary)">截止：2025-05-10</div>
+                </div>
+                <span class="badge badge-danger">紧急</span>
+              </div>
+              <div class="task-item">
+                <div class="task-check" onclick="this.classList.toggle('done')"></div>
+                <div style="flex:1">
+                  <div style="font-size:0.85rem;color:var(--text-bright)">分析竞品Y2K系列数据</div>
+                  <div style="font-size:0.7rem;color:var(--text-secondary)">截止：2025-05-12</div>
+                </div>
+                <span class="badge badge-warning">中等</span>
+              </div>
+              <div class="task-item">
+                <div class="task-check done" onclick="this.classList.toggle('done')">✓</div>
+                <div style="flex:1">
+                  <div style="font-size:0.85rem;color:var(--text-secondary);text-decoration:line-through">整理面料供应商报价</div>
+                  <div style="font-size:0.7rem;color:var(--text-secondary)">已完成</div>
+                </div>
+                <span class="badge badge-success">完成</span>
+              </div>
+              <div class="task-item">
+                <div class="task-check" onclick="this.classList.toggle('done')"></div>
+                <div style="flex:1">
+                  <div style="font-size:0.85rem;color:var(--text-bright)">更新Q2利润预测模型</div>
+                  <div style="font-size:0.7rem;color:var(--text-secondary)">截止：2025-05-15</div>
+                </div>
+                <span class="badge badge-primary">普通</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Projects -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><span class="icon">📁</span> 最近项目</div>
+              <button class="btn btn-outline btn-sm">查看全部</button>
+            </div>
+            <div class="data-table" style="display:table;width:100%">
+              <div style="display:table-row">
+                <div style="display:table-cell;padding:10px 12px;font-size:0.75rem;color:var(--text-secondary);border-bottom:1px solid var(--border)">项目名称</div>
+                <div style="display:table-cell;padding:10px 12px;font-size:0.75rem;color:var(--text-secondary);border-bottom:1px solid var(--border)">状态</div>
+                <div style="display:table-cell;padding:10px 12px;font-size:0.75rem;color:var(--text-secondary);border-bottom:1px solid var(--border)">更新时间</div>
+              </div>
+              <div style="display:table-row">
+                <div style="display:table-cell;padding:10px 12px;color:var(--text-bright)">2025春夏新品选品</div>
+                <div style="display:table-cell;padding:10px 12px"><span class="badge badge-warning">进行中</span></div>
+                <div style="display:table-cell;padding:10px 12px;font-size:0.8rem;color:var(--text-secondary)">2小时前</div>
+              </div>
+              <div style="display:table-row">
+                <div style="display:table-cell;padding:10px 12px;color:var(--text-bright)">Y2K风格竞品分析</div>
+                <div style="display:table-cell;padding:10px 12px"><span class="badge badge-accent">分析中</span></div>
+                <div style="display:table-cell;padding:10px 12px;font-size:0.8rem;color:var(--text-secondary)">5小时前</div>
+              </div>
+              <div style="display:table-row">
+                <div style="display:table-cell;padding:10px 12px;color:var(--text-bright)">Q1销售复盘报告</div>
+                <div style="display:table-cell;padding:10px 12px"><span class="badge badge-success">已完成</span></div>
+                <div style="display:table-cell;padding:10px 12px;font-size:0.8rem;color:var(--text-secondary)">昨天</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Sidebar -->
+        <div>
+          <!-- User Profile Card -->
+          <div class="card" style="margin-bottom:20px;text-align:center">
+            <div class="avatar" style="width:64px;height:64px;font-size:1.5rem;margin:0 auto 12px">AI</div>
+            <div style="font-size:1.1rem;font-weight:700;color:var(--text-bright)">选品专家</div>
+            <div style="font-size:0.8rem;color:var(--text-secondary);margin-bottom:12px">高级分析师 · 时尚事业部</div>
+            <div style="display:flex;justify-content:center;gap:20px;padding:12px 0;border-top:1px solid var(--border)">
+              <div style="text-align:center">
+                <div style="font-size:1.2rem;font-weight:800;color:var(--accent)">128</div>
+                <div style="font-size:0.65rem;color:var(--text-secondary)">选品方案</div>
+              </div>
+              <div style="text-align:center">
+                <div style="font-size:1.2rem;font-weight:800;color:var(--primary-light)">96%</div>
+                <div style="font-size:0.65rem;color:var(--text-secondary)">准确率</div>
+              </div>
+              <div style="text-align:center">
+                <div style="font-size:1.2rem;font-weight:800;color:var(--warning)">4.9</div>
+                <div style="font-size:0.65rem;color:var(--text-secondary)">评分</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- AI Insights -->
+          <div class="card" style="margin-bottom:20px">
+            <div class="card-header">
+              <div class="card-title"><span class="icon">🤖</span> AI洞察</div>
+            </div>
+            <div style="font-size:0.8rem;color:var(--text);line-height:1.6;padding:8px 0;border-bottom:1px solid var(--border)">
+              💡 新中式风格热度持续攀升，建议增加相关品类选品比例
+            </div>
+            <div style="font-size:0.8rem;color:var(--text);line-height:1.6;padding:8px 0;border-bottom:1px solid var(--border)">
+              📈 薄荷绿色系搜索量周环比+45%，可作为主打色开发
+            </div>
+            <div style="font-size:0.8rem;color:var(--text);line-height:1.6;padding:8px 0">
+              ⚠️ 醋酸面料供应商产能紧张，建议提前锁定订单
+            </div>
+          </div>
+
+          <!-- Activity Log -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><span class="icon">📝</span> 最近动态</div>
+            </div>
+            <div>
+              <div class="activity-item">
+                <div class="activity-dot" style="background:var(--success)"></div>
+                <div>
+                  <div style="font-size:0.8rem;color:var(--text-bright)">完成选品方案「春季上新」</div>
+                  <div style="font-size:0.65rem;color:var(--text-secondary)">30分钟前</div>
+                </div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-dot" style="background:var(--accent)"></div>
+                <div>
+                  <div style="font-size:0.8rem;color:var(--text-bright)">AI分析报告已生成</div>
+                  <div style="font-size:0.65rem;color:var(--text-secondary)">2小时前</div>
+                </div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-dot" style="background:var(--primary)"></div>
+                <div>
+                  <div style="font-size:0.8rem;color:var(--text-bright)">新增竞品监控「品牌X」</div>
+                  <div style="font-size:0.65rem;color:var(--text-secondary)">5小时前</div>
+                </div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-dot" style="background:var(--warning)"></div>
+                <div>
+                  <div style="font-size:0.8rem;color:var(--text-bright)">趋势报告更新提醒</div>
+                  <div style="font-size:0.65rem;color:var(--text-secondary)">昨天</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/common.js"></script>
+  <script>
+    document.getElementById('nav').innerHTML = getNavHTML('user.html');
+    Utils.initSidebar();
+  </script>
+</body>
+</html>
