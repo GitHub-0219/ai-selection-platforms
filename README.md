@@ -42,23 +42,23 @@ ai-selection-platforms/
 ├── ai-fashion/              # 👗 时尚选品平台
 │   ├── index.html           #   首页
 │   ├── selection.html       #   AI选品页
-│   ├── trends.html          #   趋势分析页
+│   ├── trend.html           #   趋势分析页
 │   ├── design.html          #   设计中心页
 │   ├── data.html            #   数据看板页
 │   ├── user.html            #   用户中心页
 │   ├── css/                 #   样式文件
-│   ├── js/                  #   脚本文件
-│   └── assets/              #   静态资源
+│   └── js/                  #   脚本文件
 ├── ai-wholesale/            # 📦 批发选品平台
 │   ├── index.html           #   首页
 │   ├── selection.html       #   AI选品页
-│   ├── trends.html          #   趋势分析页
+│   ├── trend.html           #   趋势分析页
 │   ├── design.html          #   设计中心页
 │   ├── data.html            #   数据看板页
 │   ├── user.html            #   用户中心页
 │   ├── css/                 #   样式文件
-│   ├── js/                  #   脚本文件
-│   └── assets/              #   静态资源
+│   └── js/                  #   脚本文件
+├── .gitignore
+├── LICENSE
 └── README.md
 ```
 
@@ -92,8 +92,6 @@ python3 -m http.server 8080
 ---
 
 ## 📸 截图
-
-<!-- 请在此处添加项目截图 -->
 
 | 首页 | 选品页 | 数据看板 |
 |------|--------|----------|
