@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Wholesale - 智能批发选品平台</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <button class="mobile-toggle">☰</button>
+  <div class="overlay"></div>
+  <div class="app-layout">
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <h1>AI Wholesale</h1>
+        <p>智能批发选品平台</p>
+      </div>
+      <nav class="sidebar-nav" id="nav"></nav>
+      <div class="sidebar-footer">
+        <div class="avatar">AW</div>
+        <div class="user-info">
+          <div class="name">批发分析师</div>
+          <div class="role">高级采购顾问</div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="page-header">
+        <div>
+          <div class="page-title"><span>AI</span> 批发洞察 · 智能选品</div>
+          <div class="page-subtitle">基于大数据与AI算法的批发趋势预测与智能选品系统</div>
+        </div>
+        <div class="header-actions">
+          <div class="search-box">
+            <input class="input" placeholder="搜索商品/供应商/趋势..." style="width:260px">
+          </div>
+          <button class="btn btn-primary">🔍 AI分析</button>
+        </div>
+      </div>
+
+      <!-- Stat Cards -->
+      <div class="grid grid-4" style="margin-bottom:24px">
+        <div class="stat-card fade-in">
+          <div class="stat-label">📈 今日市场热度</div>
+          <div class="stat-value" data-count="94">0</div>
+          <div class="stat-change up">▲ 15% 较昨日</div>
+        </div>
+        <div class="stat-card fade-in" style="animation-delay:0.1s">
+          <div class="stat-label">🏭 活跃供应商</div>
+          <div class="stat-value" data-count="2860">0</div>
+          <div class="stat-change up">▲ 8% 较上周</div>
+        </div>
+        <div class="stat-card fade-in" style="animation-delay:0.2s">
+          <div class="stat-label">🔥 爆款发现数</div>
+          <div class="stat-value" data-count="234">0</div>
+          <div class="stat-change up">▲ 35 今日新增</div>
+        </div>
+        <div class="stat-card fade-in" style="animation-delay:0.3s">
+          <div class="stat-label">💰 采购成本优化</div>
+          <div class="stat-value" data-count="28">0</div>
+          <div class="stat-change up">▲ 12% 较上月</div>
+        </div>
+      </div>
+
+      <!-- Category Heat + Price Trends -->
+      <div class="grid grid-2" style="margin-bottom:24px">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span class="icon">🔥</span> 品类热度排行</div>
+            <span class="badge badge-accent">实时更新</span>
+          </div>
+          <div id="categoryChart" class="bar-chart" style="height:180px;margin-bottom:30px"></div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span class="icon">📊</span> 原材料价格趋势</div>
+            <span class="badge badge-primary">AI预测</span>
+          </div>
+          <div id="priceTrend"></div>
+        </div>
+      </div>
+
+      <!-- Forecasts + Supplier Rankings -->
+      <div class="grid grid-2" style="margin-bottom:24px">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span class="icon">🔮</span> AI销量预测</div>
+            <span class="badge badge-warning">2025春夏</span>
+          </div>
+          <div id="forecastList"></div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span class="icon">🏭</span> 优质供应商TOP</div>
+          </div>
+          <div id="supplierRanking"></div>
+        </div>
+      </div>
+
+      <!-- Inventory Alerts -->
+      <div class="card" style="margin-bottom:24px">
+        <div class="card-header">
+          <div class="card-title"><span class="icon">📦</span> 库存预警</div>
+          <span class="badge badge-danger">需关注</span>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="data-table" id="inventoryTable">
+            <thead><tr><th>SKU</th><th>商品</th><th>当前库存</th><th>在途</th><th>已出库</th><th>状态</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- AI Recommendations -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span class="icon">🤖</span> AI智能推荐采购方案</div>
+          <button class="btn btn-outline btn-sm">查看全部 →</button>
+        </div>
+        <div class="grid grid-3" id="recommendGrid"></div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/common.js"></script>
+  <script>
+    document.getElementById('nav').innerHTML = getNavHTML('index.html');
+
+    // Animate stat numbers
+    document.querySelectorAll('[data-count]').forEach(el => {
+      const target = parseInt(el.dataset.count);
+      setTimeout(() => Utils.animateNum(el, target), 500);
+    });
+
+    // Category Chart
+    (function() {
+      const container = document.getElementById('categoryChart');
+      const data = MOCK.categories;
+      const max = Math.max(...data.map(d => d.heat));
+      data.forEach(d => {
+        const item = document.createElement('div');
+        item.className = 'bar-chart-item';
+        item.style.height = (d.heat / max * 100) + '%';
+        item.innerHTML = `<span class="value">${d.heat}</span><span class="label">${d.name.slice(0,4)}</span>`;
+        container.appendChild(item);
+      });
+    })();
+
+    // Price Trend
+    (function() {
+      const container = document.getElementById('priceTrend');
+      const data = MOCK.priceTrends;
+      const items = ['cotton', 'silk', 'polyester', 'wool'];
+      const labels = { cotton: '棉纱', silk: '真丝', polyester: '涤纶', wool: '羊毛' };
+      const colors = ['#0984E3', '#00B894', '#74B9FF', '#F59E0B'];
+      items.forEach((key, idx) => {
+        const values = data.map(d => d[key]);
+        const max = Math.max(...values);
+        const min = Math.min(...values);
+        const latest = values[values.length - 1];
+        const change = ((latest - values[0]) / values[0] * 100).toFixed(1);
+        const row = document.createElement('div');
+        row.style.cssText = 'padding:10px 0;border-bottom:1px solid var(--border)';
+        row.innerHTML = `
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+            <span style="font-size:0.85rem;color:var(--text-bright);display:flex;align-items:center;gap:6px">
+              <span style="width:8px;height:8px;border-radius:50%;background:${colors[idx]}"></span>
+              ${labels[key]}
+            </span>
+            <span style="font-size:0.8rem;color:${change >= 0 ? 'var(--success)' : 'var(--danger)'}">¥${latest} (${change >= 0 ? '+' : ''}${change}%)</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width:${(latest - min) / (max - min) * 100}%;background:${colors[idx]}"></div></div>
+        `;
+        container.appendChild(row);
+      });
+    })();
+
+    // Forecasts
+    (function() {
+      const container = document.getElementById('forecastList');
+      MOCK.forecasts.forEach(f => {
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);gap:12px';
+        row.innerHTML = `
+          <span style="flex:1;font-size:0.85rem;color:var(--text-bright)">${f.category}</span>
+          <span style="font-size:0.8rem;color:var(--accent)">${Utils.formatNum(f.predicted)}件</span>
+          <span class="badge ${f.confidence >= 90 ? 'badge-success' : f.confidence >= 80 ? 'badge-accent' : 'badge-warning'}">${f.confidence}%</span>
+          <span style="font-size:0.75rem;color:${f.trend === 'up' ? 'var(--success)' : f.trend === 'down' ? 'var(--danger)' : 'var(--text-secondary)'}">${f.trend === 'up' ? '↑' : f.trend === 'down' ? '↓' : '→'}</span>
+        `;
+        container.appendChild(row);
+      });
+    })();
+
+    // Supplier Ranking
+    (function() {
+      const container = document.getElementById('supplierRanking');
+      MOCK.suppliers.slice(0, 5).forEach((s, i) => {
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);gap:12px';
+        const rankColor = i < 3 ? ['var(--warning)', 'var(--text-secondary)', 'var(--accent)'][i] : 'var(--text-secondary)';
+        row.innerHTML = `
+          <span style="width:24px;height:24px;border-radius:50%;background:${rankColor}20;color:${rankColor};display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700">${i+1}</span>
+          <span style="flex:1;font-size:0.85rem;color:var(--text-bright)">${s.name.slice(0,8)}</span>
+          <span style="font-size:0.75rem;color:var(--accent)">★ ${s.rating}</span>
+          <span style="font-size:0.7rem;color:var(--text-secondary)">${s.location}</span>
+        `;
+        container.appendChild(row);
+      });
+    })();
+
+    // Inventory Table
+    (function() {
+      const tbody = document.querySelector('#inventoryTable tbody');
+      MOCK.inventory.forEach(item => {
+        const statusColor = item.status === '充足' ? 'badge-success' : item.status === '偏低' ? 'badge-warning' : 'badge-danger';
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td style="font-family:monospace;color:var(--text-secondary)">${item.sku}</td>
+          <td style="color:var(--text-bright)">${item.name}</td>
+          <td>${item.stock.toLocaleString()}</td>
+          <td style="color:var(--accent)">${item.inbound.toLocaleString()}</td>
+          <td>${item.outbound.toLocaleString()}</td>
+          <td><span class="badge ${statusColor}">${item.status}</span></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    })();
+
+    // Recommendations
+    (function() {
+      const grid = document.getElementById('recommendGrid');
+      const recs = [
+        { title: '春夏爆款组合', desc: '新中式连衣裙+极简西装外套', saving: '¥12,800', emoji: '🌸' },
+        { title: '高利润选品包', desc: 'Y2K亮片吊带+机能工装裤', saving: '¥8,500', emoji: '💰' },
+        { title: '清仓补货方案', desc: 'Clean Fit T恤批量采购优化', saving: '¥5,200', emoji: '📦' }
+      ];
+      recs.forEach(r => {
+        const card = document.createElement('div');
+        card.style.cssText = 'background:var(--gradient-card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;cursor:pointer;transition:var(--transition)';
+        card.innerHTML = `
+          <div style="font-size:2rem;margin-bottom:12px">${r.emoji}</div>
+          <div style="font-weight:700;color:var(--text-bright);margin-bottom:6px">${r.title}</div>
+          <div style="font-size:0.8rem;color:var(--text-secondary);margin-bottom:10px">${r.desc}</div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:0.85rem;font-weight:700;color:var(--success)">预估节省 ${r.saving}</span>
+            <span class="badge badge-accent">AI推荐</span>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    })();
+
+    Utils.initSidebar();
+  </script>
+</body>
+</html>

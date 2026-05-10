@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>趋势分析 - AI Wholesale</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <button class="mobile-toggle">☰</button>
+  <div class="overlay"></div>
+  <div class="app-layout">
+    <aside class="sidebar">
+      <div class="sidebar-logo"><h1>AI Wholesale</h1><p>智能批发选品平台</p></div>
+      <nav class="sidebar-nav" id="nav"></nav>
+      <div class="sidebar-footer">
+        <div class="avatar">AW</div>
+        <div class="user-info"><div class="name">批发分析师</div><div class="role">高级采购顾问</div></div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="page-header">
+        <div>
+          <div class="page-title"><span>趋势</span>分析</div>
+          <div class="page-subtitle">批发行业趋势全景分析与预测</div>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-primary">📊 生成报告</button>
+          <button class="btn btn-outline">⬇️ 导出数据</button>
+        </div>
+      </div>
+
+      <!-- Market Heat Timeline -->
+      <div class="card" style="margin-bottom:24px">
+        <div class="card-header">
+          <div class="card-title"><span class="icon">📅</span> 市场热度时间轴</div>
+          <div class="tabs" style="border:none;margin:0">
+            <div class="tab active">2024</div><div class="tab">2025</div><div class="tab">2026</div>
+          </div>
+        </div>
+        <div id="timeline"></div>
+      </div>
+
+      <!-- Material Trends + Category Growth -->
+      <div class="grid grid-2" style="margin-bottom:24px">
+        <div class="card">
+          <div class="card-header"><div class="card-title"><span class="icon">🧵</span> 原材料趋势热度</div></div>
+          <div id="materialChart"></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title"><span class="icon">📈</span> 品类增长趋势</div><span class="badge badge-accent">YoY</span></div>
+          <div id="categoryGrowth"></div>
+        </div>
+      </div>
+
+      <!-- Hot Keywords + Social Heat -->
+      <div class="grid grid-2" style="margin-bottom:24px">
+        <div class="card">
+          <div class="card-header"><div class="card-title"><span class="icon">🔍</span> 批发热搜关键词</div></div>
+          <div id="hotKeywords"></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title"><span class="icon">📱</span> 采购渠道热度</div></div>
+          <div id="channelHeat"></div>
+        </div>
+      </div>
+
+      <!-- Regional Analysis -->
+      <div class="card">
+        <div class="card-header"><div class="card-title"><span class="icon">🗺️</span> 产业带热度分布</div><span class="badge badge-primary">全国</span></div>
+        <div class="grid grid-3" id="regionGrid" style="gap:12px"></div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/common.js"></script>
+  <script>
+    document.getElementById('nav').innerHTML = getNavHTML('trend.html');
+
+    // Timeline
+    (function() {
+      const container = document.getElementById('timeline');
+      const timeline = [
+        { season: '2024春夏', trends: ['极简女装', '运动休闲', '新中式'], materials: ['棉', '涤纶', '天丝'] },
+        { season: '2024秋冬', trends: ['美拉德色系', '机能风', '户外装备'], materials: ['羊毛', '摇粒绒', '防水面料'] },
+        { season: '2025春夏', trends: ['新中式', 'Y2K千禧', '环保面料'], materials: ['有机棉', '再生涤纶', '醋酸'] },
+        { season: '2025秋冬', trends: ['极简奢', '复古未来', '智能穿戴'], materials: ['石墨烯', '气凝胶', '智能纤维'] },
+        { season: '2026春夏', trends: ['生态美学', '数字面料', '可降解'], materials: ['菌丝体', '海藻纤维', '回收尼龙'] }
+      ];
+      const colors = ['#0984E3','#00B894','#74B9FF','#55EFC4','#0984E3'];
+      timeline.forEach((t, i) => {
+        const item = document.createElement('div');
+        item.style.cssText = 'display:flex;align-items:flex-start;margin-bottom:24px;position:relative;padding-left:40px';
+        item.innerHTML = `
+          <div style="position:absolute;left:0;top:0;width:24px;height:24px;border-radius:50%;background:${colors[i]};display:flex;align-items:center;justify-content:center;font-size:0.65rem;color:#fff;font-weight:700;z-index:2">${i+1}</div>
+          ${i < timeline.length - 1 ? `<div style="position:absolute;left:11px;top:24px;width:2px;height:calc(100%);background:${colors[i]}40"></div>` : ''}
+          <div style="flex:1;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px">
+            <div style="font-weight:700;color:var(--text-bright);margin-bottom:8px;font-size:1rem">${t.season}</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
+              ${t.trends.map(tr => `<span class="badge badge-primary">${tr}</span>`).join('')}
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              ${t.materials.map(m => `<span style="font-size:0.75rem;color:var(--accent)">● ${m}</span>`).join('')}
+            </div>
+          </div>
+        `;
+        container.appendChild(item);
+      });
+    })();
+
+    // Material Chart
+    (function() {
+      const container = document.getElementById('materialChart');
+      const max = Math.max(...MOCK.priceTrends.map(d => Math.max(d.cotton, d.silk, d.polyester, d.wool)));
+      ['cotton', 'silk', 'polyester', 'wool'].forEach((key, idx) => {
+        const labels = { cotton: '棉纱', silk: '真丝', polyester: '涤纶', wool: '羊毛' };
+        const colors = ['#0984E3', '#00B894', '#74B9FF', '#F59E0B'];
+        const values = MOCK.priceTrends.map(d => d[key]);
+        const latest = values[values.length - 1];
+        const change = ((latest - values[0]) / values[0] * 100).toFixed(1);
+        const row = document.createElement('div');
+        row.style.cssText = 'margin-bottom:14px';
+        row.innerHTML = `
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+            <span style="font-size:0.85rem;color:var(--text-bright);display:flex;align-items:center;gap:6px">
+              <span style="width:8px;height:8px;border-radius:50%;background:${colors[idx]}"></span>${labels[key]}
+            </span>
+            <span style="font-size:0.75rem;color:${change >= 0 ? 'var(--danger)' : 'var(--success)'}">¥${latest}/kg ${change >= 0 ? '+' : ''}${change}%</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width:${latest/max*100}%;background:${colors[idx]}"></div></div>
+        `;
+        container.appendChild(row);
+      });
+    })();
+
+    // Category Growth
+    (function() {
+      const container = document.getElementById('categoryGrowth');
+      MOCK.categories.forEach(c => {
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);gap:12px';
+        row.innerHTML = `
+          <span style="flex:1;font-size:0.85rem;color:var(--text-bright)">${c.name}</span>
+          <div class="sparkline" style="width:60px">${Array.from({length:6},() => `<div class="sparkline-bar" style="height:${Utils.rand(30,100)}%;width:3px;background:var(--accent);border-radius:1px"></div>`).join('')}</div>
+          <span style="font-size:0.8rem;font-weight:700;color:var(--success)">${c.growth}</span>
+        `;
+        container.appendChild(row);
+      });
+    })();
+
+    // Hot Keywords
+    (function() {
+      const container = document.getElementById('hotKeywords');
+      const keywords = ['纯棉T恤批发','蓝牙耳机工厂','运动鞋代工','保温杯定制','数据线OEM','防晒衣厂家','瑜伽裤源头','充电宝批发'];
+      keywords.forEach((k, i) => {
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);gap:10px';
+        const heat = 100 - i * 8;
+        row.innerHTML = `
+          <span style="font-size:0.8rem;color:var(--text-bright);flex:1">${k}</span>
+          <div class="sparkline" style="width:60px">${Array.from({length:6},() => `<div class="sparkline-bar" style="height:${Utils.rand(30,100)}%;width:3px;background:var(--accent);border-radius:1px"></div>`).join('')}</div>
+          <span style="font-size:0.7rem;color:var(--accent)">${heat}</span>
+        `;
+        container.appendChild(row);
+      });
+    })();
+
+    // Channel Heat
+    (function() {
+      const container = document.getElementById('channelHeat');
+      const channels = [
+        { name: '1688', heat: 95, emoji: '🏪' },
+        { name: '拼多多批发', heat: 82, emoji: '🛒' },
+        { name: '抖音电商', heat: 78, emoji: '🎵' },
+        { name: '义乌购', heat: 72, emoji: '🌍' },
+        { name: '线下展会', heat: 65, emoji: '🏟️' }
+      ];
+      channels.forEach(c => {
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);gap:10px';
+        row.innerHTML = `
+          <span style="font-size:1.2rem">${c.emoji}</span>
+          <span style="flex:1;font-size:0.85rem;color:var(--text-bright)">${c.name}</span>
+          <div class="progress-bar" style="width:100px"><div class="progress-fill" style="width:${c.heat}%"></div></div>
+          <span style="font-size:0.75rem;color:var(--accent);min-width:30px">${c.heat}</span>
+        `;
+        container.appendChild(row);
+      });
+    })();
+
+    // Regional Analysis
+    (function() {
+      const grid = document.getElementById('regionGrid');
+      const regions = [
+        { name: '广东', cities: '广州·深圳·东莞', heat: 98, products: '服装·电子·鞋靴', emoji: '🏭' },
+        { name: '浙江', cities: '义乌·杭州·绍兴', heat: 95, products: '小商品·面料·家纺', emoji: '🏪' },
+        { name: '江苏', cities: '苏州·南通·常熟', heat: 85, products: '纺织·服装·电子', emoji: '🏗️' },
+        { name: '福建', cities: '泉州·晋江·石狮', heat: 80, products: '鞋靴·服装·食品', emoji: '👟' },
+        { name: '河北', cities: '白沟·清河·安平', heat: 72, products: '箱包·羊绒·丝网', emoji: '👜' },
+        { name: '山东', cities: '青岛·即墨·临沂', heat: 68, products: '纺织·食品·五金', emoji: '🔧' }
+      ];
+      regions.forEach(r => {
+        const card = document.createElement('div');
+        card.style.cssText = 'background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;transition:var(--transition)';
+        card.innerHTML = `
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+            <span style="font-size:1.5rem">${r.emoji}</span>
+            <div>
+              <div style="font-weight:700;color:var(--text-bright)">${r.name}</div>
+              <div style="font-size:0.7rem;color:var(--text-secondary)">${r.cities}</div>
+            </div>
+            <span class="badge badge-accent" style="margin-left:auto">🔥 ${r.heat}</span>
+          </div>
+          <div style="font-size:0.75rem;color:var(--text-secondary)">${r.products}</div>
+        `;
+        grid.appendChild(card);
+      });
+    })();
+
+    Utils.initSidebar();
+  </script>
+</body>
+</html>

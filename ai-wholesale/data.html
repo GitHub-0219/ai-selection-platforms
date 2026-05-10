@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>数据分析 - AI Wholesale</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <button class="mobile-toggle">☰</button>
+  <div class="overlay"></div>
+  <div class="app-layout">
+    <aside class="sidebar">
+      <div class="sidebar-logo"><h1>AI Wholesale</h1><p>智能批发选品平台</p></div>
+      <nav class="sidebar-nav" id="nav"></nav>
+      <div class="sidebar-footer">
+        <div class="avatar">AW</div>
+        <div class="user-info"><div class="name">批发分析师</div><div class="role">高级采购顾问</div></div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="page-header">
+        <div>
+          <div class="page-title"><span>数据</span>中心</div>
+          <div class="page-subtitle">全维度批发数据洞察与分析看板</div>
+        </div>
+        <div class="header-actions">
+          <select class="select" style="width:120px">
+            <option>最近7天</option><option selected>最近30天</option><option>最近90天</option>
+          </select>
+          <button class="btn btn-primary">📊 导出报告</button>
+        </div>
+      </div>
+
+      <div class="grid grid-4" style="margin-bottom:24px">
+        <div class="stat-card"><div class="stat-label">总采购额</div><div class="stat-value">¥<span data-count="568">0</span>万</div><div class="stat-change up">▲ 22.5%</div></div>
+        <div class="stat-card"><div class="stat-label">采购订单</div><div class="stat-value" data-count="3280">0</div><div class="stat-change up">▲ 15.3%</div></div>
+        <div class="stat-card"><div class="stat-label">平均单价</div><div class="stat-value">¥<span data-count="18">0</span></div><div class="stat-change down">▼ 8.2%</div></div>
+        <div class="stat-card"><div class="stat-label">供应商数</div><div class="stat-value" data-count="156">0</div><div class="stat-change up">▲ 12</div></div>
+      </div>
+
+      <div class="grid grid-2" style="margin-bottom:24px">
+        <div class="card">
+          <div class="card-header"><div class="card-title"><span class="icon">📈</span> 月度采购趋势</div><span class="badge badge-accent">万元</span></div>
+          <div id="monthlyChart" class="bar-chart" style="height:200px;margin-bottom:30px"></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title"><span class="icon">🍩</span> 品类采购分布</div></div>
+          <div style="display:flex;align-items:center;gap:30px;justify-content:center;padding:20px">
+            <div style="width:160px;height:160px;border-radius:50%;background:conic-gradient(#0984E3 0% 35%, #00B894 35% 57%, #74B9FF 57% 75%, #55EFC4 75% 90%, #F59E0B 90% 100%);position:relative">
+              <div style="position:absolute;inset:30px;background:var(--bg-dark);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-direction:column">
+                <div style="font-size:1.4rem;font-weight:800;color:var(--text-bright)">100%</div>
+                <div style="font-size:0.65rem;color:var(--text-secondary)">总采购额</div>
+              </div>
+            </div>
+            <div id="categoryLegend"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-2" style="margin-bottom:24px">
+        <div class="card">
+          <div class="card-header"><div class="card-title"><span class="icon">🏭</span> 供应商绩效</div></div>
+          <div id="supplierPerformance"></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title"><span class="icon">📊</span> 价格波动监控</div><span class="badge badge-danger">实时</span></div>
+          <div id="priceMonitor"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><div class="card-title"><span class="icon">🔥</span> 热门采购商品排行</div><span class="badge badge-accent">实时更新</span></div>
+        <div style="overflow-x:auto">
+          <table class="data-table" id="hotTable">
+            <thead><tr><th>排名</th><th>商品</th><th>品类</th><th>采购价</th><th>采购量</th><th>趋势</th><th>库存</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/common.js"></script>
+  <script>
+    document.getElementById('nav').innerHTML = getNavHTML('data.html');
+
+    document.querySelectorAll('[data-count]').forEach(el => {
+      const target = parseInt(el.dataset.count);
+      setTimeout(() => Utils.animateNum(el, target), 500);
+    });
+
+    // Monthly Chart
+    (function() {
+      const container = document.getElementById('monthlyChart');
+      const data = [
+        { month:'1月', value:380 }, { month:'2月', value:290 }, { month:'3月', value:450 },
+        { month:'4月', value:520 }, { month:'5月', value:580 }, { month:'6月', value:620 },
+        { month:'7月', value:550 }, { month:'8月', value:490 }, { month:'9月', value:510 },
+        { month:'10月', value:600 }, { month:'11月', value:680 }, { month:'12月', value:720 }
+      ];
+      const max = Math.max(...data.map(d => d.value));
+      data.forEach(d => {
+        const item = document.createElement('div');
+        item.className = 'bar-chart-item';
+        item.style.height = (d.value / max * 100) + '%';
+        item.innerHTML = `<span class="value">${d.value}</span><span class="label">${d.month}</span>`;
+        container.appendChild(item);
+      });
+    })();
+
+    // Category Legend
+    (function() {
+      const container = document.getElementById('categoryLegend');
+      const colors = ['#0984E3','#00B894','#74B9FF','#55EFC4','#F59E0B'];
+      MOCK.categories.forEach((c, i) => {
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:8px';
+        row.innerHTML = `<div style="width:12px;height:12px;border-radius:3px;background:${colors[i]}"></div><span style="font-size:0.8rem;color:var(--text-bright);min-width:60px">${c.name}</span><span style="font-size:0.75rem;color:var(--accent)">${c.revenue}</span>`;
+        container.appendChild(row);
+      });
+    })();
+
+    // Supplier Performance
+    (function() {
+      const container = document.getElementById('supplierPerformance');
+      MOCK.suppliers.forEach(s => {
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)';
+        row.innerHTML = `
+          <span style="min-width:100px;font-size:0.8rem;color:var(--text-bright)">${s.name.slice(0,6)}</span>
+          <div style="flex:1;height:8px;background:rgba(255,255,255,0.06);border-radius:4px;overflow:hidden"><div style="height:100%;width:${s.rating/5*100}%;background:var(--gradient-primary);border-radius:4px"></div></div>
+          <span style="font-size:0.75rem;color:var(--accent);min-width:30px">★${s.rating}</span>
+          <span style="font-size:0.65rem;color:var(--text-secondary);min-width:60px">${s.delivery}</span>
+        `;
+        container.appendChild(row);
+      });
+    })();
+
+    // Price Monitor
+    (function() {
+      const container = document.getElementById('priceMonitor');
+      const items = [
+        { name: '棉纱', price: '¥14.2', change: '+3.2%', up: true },
+        { name: '真丝', price: '¥98', change: '+5.1%', up: true },
+        { name: '涤纶', price: '¥8.0', change: '-2.4%', up: false },
+        { name: '羊毛', price: '¥42', change: '-1.8%', up: false },
+        { name: '氨纶', price: '¥35', change: '+8.5%', up: true }
+      ];
+      items.forEach(i => {
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);gap:10px';
+        row.innerHTML = `
+          <span style="flex:1;font-size:0.85rem;color:var(--text-bright)">${i.name}</span>
+          <span style="font-size:0.85rem;color:var(--accent)">${i.price}/kg</span>
+          <span style="font-size:0.75rem;color:${i.up ? 'var(--danger)' : 'var(--success)'}">${i.change}</span>
+        `;
+        container.appendChild(row);
+      });
+    })();
+
+    // Hot Table
+    (function() {
+      const tbody = document.querySelector('#hotTable tbody');
+      const products = [
+        { name: '纯棉圆领T恤', cat: '服装', price: '¥8.5', qty: '125,600', stock: '充足' },
+        { name: '飞织运动鞋', cat: '鞋靴', price: '¥25', qty: '89,000', stock: '充足' },
+        { name: '无线蓝牙耳机', cat: '电子', price: '¥15', qty: '234,000', stock: '偏低' },
+        { name: '不锈钢保温杯', cat: '家居', price: '¥6.5', qty: '189,000', stock: '充足' },
+        { name: '数据线Type-C', cat: '电子', price: '¥1.8', qty: '567,000', stock: '紧张' }
+      ];
+      products.forEach((p, i) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><span style="width:24px;height:24px;border-radius:50%;background:${i<3?'var(--warning)':'rgba(255,255,255,0.05)'};color:${i<3?'#000':'var(--text-secondary)'};display:inline-flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700">${i+1}</span></td>
+          <td style="color:var(--text-bright)">${p.name}</td>
+          <td><span class="badge badge-primary">${p.cat}</span></td>
+          <td style="color:var(--accent)">${p.price}</td>
+          <td>${p.qty}</td>
+          <td><span style="color:var(--success)">▲ ${Utils.rand(5,30)}%</span></td>
+          <td><span class="badge ${p.stock==='充足'?'badge-success':p.stock==='偏低'?'badge-warning':'badge-danger'}">${p.stock}</span></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    })();
+
+    Utils.initSidebar();
+  </script>
+</body>
+</html>

@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI选品 - AI Wholesale</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <button class="mobile-toggle">☰</button>
+  <div class="overlay"></div>
+  <div class="app-layout">
+    <aside class="sidebar">
+      <div class="sidebar-logo"><h1>AI Wholesale</h1><p>智能批发选品平台</p></div>
+      <nav class="sidebar-nav" id="nav"></nav>
+      <div class="sidebar-footer">
+        <div class="avatar">AW</div>
+        <div class="user-info"><div class="name">批发分析师</div><div class="role">高级采购顾问</div></div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="page-header">
+        <div>
+          <div class="page-title"><span>AI</span> 智能选品</div>
+          <div class="page-subtitle">基于多维度AI算法的批发选品推荐</div>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-primary" onclick="runAISelection()">🤖 AI智能匹配</button>
+          <button class="btn btn-outline">📋 选品方案</button>
+        </div>
+      </div>
+
+      <!-- Selection Filters -->
+      <div class="card" style="margin-bottom:24px">
+        <div class="card-header">
+          <div class="card-title"><span class="icon">⚙️</span> 选品条件</div>
+          <span class="badge badge-accent">AI增强</span>
+        </div>
+        <div class="grid grid-3" style="gap:16px">
+          <div>
+            <label style="font-size:0.75rem;color:var(--text-secondary);display:block;margin-bottom:6px">品类</label>
+            <select class="select" id="filterCategory">
+              <option value="">全部品类</option>
+              <option>女装</option><option>男装</option><option>童装</option><option>运动户外</option><option>内衣家居</option><option>鞋靴箱包</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:0.75rem;color:var(--text-secondary);display:block;margin-bottom:6px">价格区间</label>
+            <select class="select" id="filterPrice">
+              <option value="">不限</option>
+              <option value="0-50">¥0-50</option>
+              <option value="50-200">¥50-200</option>
+              <option value="200-500">¥200-500</option>
+              <option value="500+">¥500+</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:0.75rem;color:var(--text-secondary);display:block;margin-bottom:6px">供应商地区</label>
+            <select class="select" id="filterRegion">
+              <option value="">全部地区</option>
+              <option>广东</option><option>浙江</option><option>江苏</option><option>福建</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:0.75rem;color:var(--text-secondary);display:block;margin-bottom:6px">起订量</label>
+            <select class="select" id="filterMOQ">
+              <option value="">不限</option>
+              <option>50件以下</option><option>50-200件</option><option>200-1000件</option><option>1000件以上</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:0.75rem;color:var(--text-secondary);display:block;margin-bottom:6px">交期要求</label>
+            <select class="select" id="filterDelivery">
+              <option value="">不限</option>
+              <option>3天内</option><option>7天内</option><option>15天内</option><option>30天内</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:0.75rem;color:var(--text-secondary);display:block;margin-bottom:6px">供应商评级</label>
+            <select class="select" id="filterCredit">
+              <option value="">不限</option>
+              <option>A+</option><option>A</option><option>B+</option>
+            </select>
+          </div>
+        </div>
+        <div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap">
+          <span class="tag active">🔥 热卖爆款</span>
+          <span class="tag">📈 高增长</span>
+          <span class="tag">💰 高利润</span>
+          <span class="tag">🆕 新品潜力</span>
+          <span class="tag">⚡ 快返款</span>
+          <span class="tag">🏭 工厂直供</span>
+        </div>
+      </div>
+
+      <!-- AI Results -->
+      <div id="aiResults">
+        <div class="card" style="margin-bottom:24px">
+          <div class="card-header">
+            <div class="card-title"><span class="icon">🎯</span> AI智能匹配结果</div>
+            <span class="badge badge-success">已找到 6 个匹配供应商</span>
+          </div>
+          <div id="matchResults"></div>
+        </div>
+
+        <div class="grid grid-2" style="margin-bottom:24px">
+          <div class="card">
+            <div class="card-header"><div class="card-title"><span class="icon">⚔️</span> 价格竞争力分析</div></div>
+            <div id="priceAnalysis"></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title"><span class="icon">💰</span> 采购成本预测</div></div>
+            <div id="costPrediction"></div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/common.js"></script>
+  <script>
+    document.getElementById('nav').innerHTML = getNavHTML('selection.html');
+
+    // Render match results
+    (function() {
+      const container = document.getElementById('matchResults');
+      MOCK.suppliers.forEach(s => {
+        const card = document.createElement('div');
+        card.style.cssText = 'display:flex;gap:16px;padding:16px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:12px;transition:var(--transition)';
+        card.innerHTML = `
+          <div style="width:60px;height:60px;border-radius:var(--radius-sm);background:linear-gradient(135deg,rgba(9,132,227,0.15),rgba(0,184,148,0.1));display:flex;align-items:center;justify-content:center;font-size:1.8rem;flex-shrink:0">🏭</div>
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
+              <div style="font-weight:600;color:var(--text-bright);font-size:0.9rem">${s.name}</div>
+              <span class="badge ${s.credit === 'A+' ? 'badge-success' : 'badge-accent'}">${s.credit}</span>
+            </div>
+            <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap">
+              ${s.tags.map(t => `<span class="tag">${t}</span>`).join('')}
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.8rem">
+              <span style="color:var(--text-secondary)">📍 ${s.location} · 产能 ${s.capacity}</span>
+              <span style="color:var(--accent)">★ ${s.rating} · 年营收 ${s.revenue}</span>
+            </div>
+            <div style="margin-top:8px;font-size:0.75rem;color:var(--text-secondary);background:rgba(0,184,148,0.05);padding:8px;border-radius:6px">
+              🤖 AI推荐理由：${s.rating >= 4.7 ? '综合评分优异，交期稳定，建议优先合作' : '性价比突出，适合大批量采购'}
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    })();
+
+    // Price Analysis
+    (function() {
+      const container = document.getElementById('priceAnalysis');
+      const items = [
+        { name: '纯棉T恤', market: 15, supplier: 8.5, saving: '43%' },
+        { name: '运动鞋', market: 45, supplier: 25, saving: '44%' },
+        { name: '蓝牙耳机', market: 28, supplier: 15, saving: '46%' },
+        { name: '保温杯', market: 12, supplier: 6.5, saving: '46%' },
+        { name: '数据线', market: 5, supplier: 1.8, saving: '64%' }
+      ];
+      container.innerHTML = `
+        <table class="data-table">
+          <thead><tr><th>商品</th><th>市场均价</th><th>供应商价</th><th>节省</th></tr></thead>
+          <tbody>${items.map(i => `
+            <tr>
+              <td style="color:var(--text-bright)">${i.name}</td>
+              <td>¥${i.market}</td>
+              <td style="color:var(--accent)">¥${i.supplier}</td>
+              <td><span class="badge badge-success">${i.saving}</span></td>
+            </tr>
+          `).join('')}</tbody>
+        </table>
+      `;
+    })();
+
+    // Cost Prediction
+    (function() {
+      const container = document.getElementById('costPrediction');
+      MOCK.suppliers.slice(0, 4).forEach(s => {
+        const monthlyCost = Math.floor(Math.random() * 50000 + 10000);
+        const row = document.createElement('div');
+        row.style.cssText = 'padding:12px 0;border-bottom:1px solid var(--border)';
+        row.innerHTML = `
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <span style="font-size:0.85rem;color:var(--text-bright)">${s.name.slice(0,8)}...</span>
+            <span style="font-size:0.9rem;font-weight:700;color:var(--success)">¥${monthlyCost.toLocaleString()}/月</span>
+          </div>
+          <div style="display:flex;gap:16px;font-size:0.7rem;color:var(--text-secondary)">
+            <span>产能 ${s.capacity}</span>
+            <span>交期 ${s.delivery}</span>
+            <span style="color:var(--accent)">★ ${s.rating}</span>
+          </div>
+          <div class="progress-bar" style="margin-top:8px">
+            <div class="progress-fill" style="width:${s.rating / 5 * 100}%"></div>
+          </div>
+        `;
+        container.appendChild(row);
+      });
+    })();
+
+    function runAISelection() {
+      const btn = event.target;
+      btn.textContent = '⏳ AI分析中...';
+      btn.disabled = true;
+      setTimeout(() => {
+        btn.textContent = '🤖 AI智能匹配';
+        btn.disabled = false;
+        document.getElementById('aiResults').style.opacity = '0';
+        setTimeout(() => { document.getElementById('aiResults').style.opacity = '1'; document.getElementById('aiResults').style.transition = 'opacity 0.5s'; }, 100);
+      }, 1500);
+    }
+
+    document.querySelectorAll('.card .tag').forEach(tag => {
+      tag.addEventListener('click', () => {
+        document.querySelectorAll('.card .tag').forEach(t => t.classList.remove('active'));
+        tag.classList.add('active');
+      });
+    });
+
+    Utils.initSidebar();
+  </script>
+</body>
+</html>
